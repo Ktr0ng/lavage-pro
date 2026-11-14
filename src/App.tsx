@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import * as XLSX from "xlsx";
 import "./style.css";
 
@@ -17,7 +18,7 @@ export default function App(){
  useEffect(()=>{refresh().catch(()=>setMessage("Erreur de lecture des données."));},[]);
  const daily=useMemo(()=>ops.filter(o=>o.date===day),[ops,day]);
  const revenue=daily.reduce((s,o)=>s+o.qty*o.unit,0);
- async function submit(e:React.FormEvent){e.preventDefault();if(qty<1||!Number.isInteger(qty))return;await putOp({id:editing??crypto.randomUUID(),date,service,qty,unit:rates[service],stars,incident,detail,note});setEditing(null);setQty(1);setIncident(false);setDetail("");setNote("");await refresh();setMessage("Opération enregistrée.");}
+ async function submit(e:FormEvent){e.preventDefault();if(qty<1||!Number.isInteger(qty))return;await putOp({id:editing??crypto.randomUUID(),date,service,qty,unit:rates[service],stars,incident,detail,note});setEditing(null);setQty(1);setIncident(false);setDetail("");setNote("");await refresh();setMessage("Opération enregistrée.");}
  function edit(o:Op){setEditing(o.id);setDate(o.date);setService(o.service);setQty(o.qty);setStars(o.stars);setIncident(o.incident);setDetail(o.detail);setNote(o.note);setTab("new");}
  async function del(id:string){if(confirm("Supprimer cette opération ?")){await deleteOp(id);await refresh();}}
  function exportExcel(){const rows=ops.map(o=>({Date:o.date,Prestation:o.service,Quantité:o.qty,"Prix unitaire":o.unit,Total:o.qty*o.unit,Satisfaction:o.stars,Incident:o.incident?"Oui":"Non",Détail:o.detail,Observation:o.note}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Opérations");XLSX.writeFile(wb,"lavage-pro.xlsx");}
